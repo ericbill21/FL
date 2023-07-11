@@ -1,0 +1,288 @@
+% COMSYS Seminar/Preseminar Paper Template
+% ----------------------------------------
+% Based on the original IEEE template package; see files README, changelog.txt for details and copyright information.
+
+\documentclass[conference]{IEEEtran}
+
+%\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+
+% My libariresz
+\usepackage{subcaption}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{tabulary}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage[nameinlink]{cleveref}
+\usepackage{todonotes}
+\usepackage{censor}
+\usepackage{float}
+\usetikzlibrary{patterns,decorations.pathreplacing}
+\usetikzlibrary{arrows.meta,arrows}
+\usetikzlibrary{calc}
+
+% My code
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Federated Learning: An Investigation of Weaknesses, Countermeasures, and Attacks}
+
+\author{\IEEEauthorblockN{Eric Tillmann Bill}
+\IEEEauthorblockA{
+\textit{RWTH Aachen University}\\
+Aachen, Germany \\
+eric.bill@rwth-aachen.de}
+}
+
+\maketitle
+ 
+\begin{abstract}
+    Federated Learning (FL) is a novel approach to distributed, scalable, and privacy-preserving machine learning. However, these very characteristics make it vulnerable to various attacks, including the class of model poisoning attacks.
+    
+    In this work, we will classify attacks on FL in general into coarse categories and highlight the associated vulnerabilities of FL against each category. In particular, we will explore the underlying mechanism of model poisoning attacks in detail by examining common countermeasures that have been proposed to mitigate these attacks but are still vulnerable to modern attacks. With these findings, we conclude the paper by saying that countermeasures are just a form of statistical outlier detection, that some countermeasures risk leaking sensitive private data, and that most countermeasures do not slow down the training process.
+\end{abstract}
+
+\begin{IEEEkeywords}
+federated learning, poisoning attacks
+\end{IEEEkeywords}
+
+\section{Introduction}\label{sec:intro}
+In the past decades, machine learning has achieved remarkable success in terms of advantages in performance and scalability. Nowadays, the amount of data needed to train modern models is gigantic and constantly growing, which poses two challenges. Firstly, storing this amount of data and then training a model using only a single machine is infeasible due to the resulting long computation times. Therefore, distributed systems are commonly used for large models such as \cite{Devlin2019}. Secondly, but most importantly, collecting these volumes of data, especially when working with personal data, is difficult due to various hurdles along the way, e.g., each participant must give unrestricted consent to the sharing of his or her data, or because there have been numerous political acts in recent decades to protect people and their sensitive data. An approach that addresses both problems was proposed in the work of McMahan et al. \cite{McMahan2017} and has been termed Federated Learning (FL).
+
+FL is an approach to machine learning that allows for decentralized training of models without sharing the training data. In its most straightforward configuration, FL performs multiple iterations to train a global model, where in each iteration, it starts by sharing the current global model with all participants. Then all participants use the model for training locally on their private data. After the local training is completed, each participant sends their updated version of the model back to the server, which aggregates them into a single new global model. Thereby, each participant never shares their sensitive data, only the updated model. Moreover, since the actual training and storing are delegated to the participants, FL works in a distributed fashion, allowing for better scalability than centralized machine learning. Hence, it is fair to say that FL solves both issues at once \cite{McMahan2017}.
+
+To date, there are numerous cases where FL is used as an alternative to centralized machine learning models. Of particular interest are the use cases where centralized machine learning cannot be implemented due to non-technical reasons, such as ethical reasons concerning the training data. For example, Jochems et al. \cite{Jochems2016} used FL in a healthcare environment where several hospitals from different nations participated in training a predictive model for assessing the condition of dyspnea (shortness of breath) in patients. Most remarkable is that with the data never leaving the hospital, they were able to avoid legal, ethical, and administrative barriers that would normally hinder the sharing of information for such use cases. Similarly, Dayan et al. \cite{Dayan2021} developed an application in another health environment, where several institutes used patients' data to train a predictive model to assess the future oxygen requirements of symptomatic patients with COVID-19 in an FL fashion. Finally, with the prospect of overcoming these non-technical problems and the scalability advantages already mentioned, FL is a promising technology.
+
+Although FL has many benefits, no technology is perfect from the start. In the case of FL, there are still two significant drawbacks to consider.
+\begin{enumerate}
+    \item Despite the fact that each participant never shares their private data with the server, the updates they send to the server were computed using their private data. Thus, the updates contain information about their sensitive training data, which can sometimes be used to reconstruct the original training data \cite{Zhu2020, Balunovic2022}, thereby proposing a risk to the client's privacy.
+    \item The risk of adversarial clients who try to manipulate the learning process such that the final model performs as the adversarial attacker desires, like having a backdoor\cite{Bagdasaryan2018} or performing miserably on its intended task \cite{Fang2019}.
+\end{enumerate}
+The problems have been thoroughly studied in the literature. In this work, we will focus on the second one and aim to help the reader understand why FL architectures are vulnerable to these kinds of attacks, how they can defend against them, and why creating a foolproof solution is nearly impossible.
+
+Therefore, the remainder of this paper is structured as follows, in \Cref{sec:fl}, we will introduce a formal notation and definition of FL that will be used throughout the rest of the paper. In \Cref{sec:classification}, we introduce a classification of attacks on FL, with which we will transition into \Cref{sec:fundamental_issues_in_fl}, where we talk about fundamental problems in FL. After that, we will explain current defense mechanisms in \Cref{sec:counter_measures} and show how to develop attacks against these defense mechanisms in \Cref{sec:attacks}. Finally, in the last part, in \Cref{sec:discussion}, we will discuss the use case in light of these attacks and the necessary future research for FL.
+
+\section{Federated Learning}\label{sec:fl}
+In this section, we will briefly introduce a formal notation and definition of FL that we will use throughout the paper to ensure a coherent understanding.
+
+We refer to participants of an FL architecture as clients. The number of clients can vary and is generally referred to as $K$, such that all clients can be numbered from $1$ to $K$. There will only be a single server. Further, the data is partitioned over all clients with a partition $\mathcal{P}$, such that $\mathcal{P}_i$ is the local dataset of client $i$. The overall model we will train is of the format $f_\theta: \mathcal{X} \rightarrow \mathcal{Y}$, where $f_\theta$ is a differentiable classifier that is parameterized by $\theta$, e.g., a multi-layer perceptron. Further, we denote $\theta_t$ being the global parameters and $\theta_{t,i}$ the local parameters of client $i$ at iteration $t$. Finally, we denote with $l$ a well-defined differentiable and suitable loss function and with $\eta$ the learning rate parameter.
+
+Using this notation, we will formally introduce one of the simplest forms of FL. This architecture will run for multiple iterations, where in each iteration $t$, the following procedure is executed:
+\begin{enumerate}
+    \item The server sends out the current global model $f_{\theta_t}$ to all clients.
+    \item Each client then trains on its local data and applies gradient descent to derive its updated parameters by computing:
+    \begin{align}
+        \theta_{t,i} \leftarrow \theta_{t} - \eta \cdot \nabla_{\theta t} \  \mathbb{E}_{(x,y)\in \mathcal{P}_i}[l(f_{\theta_t}(x), y)]. \label{math:update_calc}
+    \end{align}
+    Each client then sends its update $\theta_{t,i}$ to the server.
+    \item The server aggregates all updates by averaging them and thereby derives the new global parameters $\theta_{t+1}$: 
+    \begin{align}
+        \theta_{t+1} \leftarrow \frac{1}{K} \cdot \sum\limits_{i \in \{1, \ldots K\}} \theta_{t,i} \label{math:aggregation_example}
+    \end{align}
+\end{enumerate}
+See \Cref{fig:example} for an illustration of such an iteration.
+
+A short note on this model: as stated before, it is one of the most straightforward FL architectures and is, in fact, a streamlined version of the initially proposed model \cite{McMahan2017}. By understanding this model, it is easy to generalize this concept to more complex training techniques like batch normalization \cite{Ioffe2015} and more safe model aggregation methods like \textsc{Krum} \cite{Blanchard2017}, \textsc{Buylan} \cite{Mhamdi2018} or \textsc{Trimmed mean} \cite{Yin2018}. In addition, FL is not limited to classification tasks and can easily be adapted to regression or other tasks. Finally, the number of clients is not fixed but can vary from iteration to iteration due to the design principle that clients can join or leave at any time \cite{McMahan2017}. However, for ease of understanding, we assume a constant number of clients throughout all iterations.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.45\textwidth]{Figures/poisoning_attacks_plot.pdf}
+    \caption[Caption for LOF]{An illustration of an exemplary FL environment with three clients. Here, the central server sends the current model $\theta_{t}$ to all its clients (blue arrows). Each client optimizes this model and sends an updated version back to the central server. The difference is that clients 1 and 3 are benign (indicated by the green-colored arrows), while client 2 is malicious (red-colored).\footnotemark}
+    \label{fig:example}
+\end{figure}
+\footnotetext{The graphic was designed using the freely available and open-source platform \href{https://www.draw.io}{\texttt{https://www.draw.io}}. Additionally, the icons utilized in the graphic were sourced from various libraries. The central server icon and clients icon were obtained from \href{https://www.freepik.com}{Freepik's library}, the skull icon was sourced from  \href{https://smashicons.com}{SmashIcons}, and the happy face icon was obtained from \href{https://www.flaticon.com/authors/th-studio}{th studio}.}
+
+A very important detail that we have not yet addressed and that also made FL initially so popular, is that the authors of \cite{McMahan2017} have shown that the underlying data distribution $\mathcal{P}$ is not required to be independently and identically distributed (i.i.d.), but can, in fact, be very unbalanced and is therefore referred to as non-i.i.d. data. This characteristic of FL is unlike traditional machine learning methods, including distributed machine learning techniques such as \cite{McDonald2010,Zhang2015,Povey2015}, where the training data must usually be i.i.d. to ensure convergence. For a better understanding, recall the example from the introduction where FL was applied to a healthcare setting: Since the data distribution does not have to be i.i.d., it does not matter that, for example, the dataset of hospital $A$ has proportionally more fatalities than the dataset of hospital $B$ or that all patients in hospital $A$ have certain diseases that none of the patients in the dataset of hospital $B$ have.
+
+\section{Classification of Attacks}\label{sec:classification}
+Before introducing the classification, we would like to emphasize the fact that studies on possible attacks are essential as they provide a basis for the robustness of defense techniques, as stated in \cite{Zhu2020}. Additionally, since FL is a technology that allows for better scalability by utilizing distributed computation, standard failures such as memory corruption, network loss, etc., are very common at such a scale among the clients and must therefore be also accounted for by defense mechanisms. For this reason, clients are usually regarded and referred to as Byzantine clients. This concept, introduced in \cite{Lamport1982}, covers all malicious effects a client could have on an FL architecture, whether they are deliberate or not.
+
+Attacks on FL can be categorized by their objective into two categories: 1) inference attacks and 2) poisoning attacks \cite{Lyu2020}:
+\begin{enumerate}
+    \item Interference, also known as privacy attack, are a collection of attacks that try to infer any information about the sensitive training data or training parameters \cite{Lyu2020,Balunovic2022} by leveraging the information that is contained in the updates sent from the clients to the server. Attacks of this category are further categorized, by the information they try to comprise, into class representative attacks, properties of the underlying model attacks, and training data attacks.
+     
+    \item On the other hand, poisoning attacks are a collection of attacks that attempt to manipulate the global model in terms of performance \cite{Lyu2020,Bagdasaryan2018}. For example, these attacks typically aim to reduce the global model's accuracy or introduce a backdoor into the global model. In the literature, \cite{Lyu2020}, these attacks are finer classified into data poisoning and model poisoning attacks. The difference is that in the class of data poisoning attacks, an attacker only has access to the local training data and, therefore, can only modify certain properties of that data, e.g., changing labels. The other class assumes that an attacker has (almost) full control over a compromised client and can, thus, fully change its updates sent to the central server. As one can assume, the latter class is more powerful in an FL architecture. This is due to the fact that data poisoning attacks have been researched even before FL was formally introduced. Therefore, most data poisoning attacks focus on centralized architectures; however, their findings can be, to some extent, applied to FL as well.
+\end{enumerate}
+As outlined in the introduction, this paper focuses on model poisoning attacks and explains why it is almost impossible to protect against them fully. The classification presented earlier aims to provide readers with an encompassing understanding of the various attack types. Furthermore, in Section \ref{sec:discussion}, we will explore a subtle connection between both attack types.
+
+\section{Issues in the FL architecture}\label{sec:fundamental_issues_in_fl}
+The fundamental principles of FL \cite{McMahan2017}, that the data is non-i.i.d. and is never shared with the server, leads to the fact that the server is unaware of the typical values of the updates it receives. If the data were i.i.d. across all clients, the server could expect all updates to be very similar to each other. However, because the data is non-i.i.d., the updates sent by clients are also non-i.i.d., making it challenging for the server to distinguish between malicious and benign updates.
+
+We quickly demonstrate how an attacker that only controls a single client in an FL architecture can manipulate the global model arbitrarily. This attack is inspired by the work \cite{Blanchard2017}. We assume the FL training process uses the equations provided in \Cref{sec:fl}. Further, we assume that an attacker can estimate the number of clients $K$ and has full control over client $j$. The attack works as follows, instead of using equation \ref{math:update_calc}, the client $j$ performs a gradient ascent step with a learning rate of $K'$, with $K' >> K$ being sufficiently larger than $K$:
+\begin{align}
+    \theta_{t,j} \leftarrow \theta_{t} + K' \cdot \nabla_{\theta t} \  \mathbb{E}_{(x,y)\in \mathcal{P}_j}[l(f_{\theta_t}(x), y)].
+\end{align}
+With this attack, the attacker achieves that the impact of all other clients is negligible in the aggregation, and the global model parameters will be approximately the update sent by the compromised client $j$. This attack works because the updates are not bounded, and an attacker can enforce its updates by multiplying it with a sufficiently large factor, here $K'$.
+\begin{align}
+    \frac{K'}{K} \cdot \theta_{t,j} \  \approx \ \frac{1}{K} \cdot \sum\limits_{i \in \{1, \ldots K\}} \theta_{t,i}
+\end{align}
+This simple example beautifully demonstrates where countermeasures can occur, namely only in the aggregation rule. For example, in the work of \cite{Blanchard2017}, they even proved that an FL architecture can never be safe from one or more adversarial clients if the server uses a linear combination as an aggregation function. However, as we will learn in the next section, the server can detect malicious updates if the majority of clients are benign.
+
+\section{Countermeasures}\label{sec:counter_measures}
+In this section, we will present three safe aggregation methods called \textsc{Krum}, \textsc{TrimmedMean}, and \textsc{Median}, all of which are very effective in their own way. Note that these defensive mechanisms represent only a small fraction of the proposed approaches available. Further, it is worth mentioning that these methods may not be the most secure due to more advanced and intricate methods such as \textsc{Buylan}, which are difficult to explain and prove in a short space. Noteworthy are also the methods \textsc{BRUTE}\cite{Mhamdi2018} and \textsc{GeoMed}\cite{Chen2017, Blanchard2017}.
+
+\subsection{\textsc{Krum}}
+Blanchard et al. \cite{Blanchard2017} proposed an aggregation rule called \textsc{Krum} that is safe for $m$ adversarial clients. In detail, with the assumption of $2m +2 < K$, the aggregation rule guarantees convergence to the optimum when having no malicious clients while being robust against $m$ malicious clients if the data is i.i.d. across all benign clients.
+\textsc{Krum} aggregation works as follows:
+\begin{align}
+    \theta_{t+1} &\leftarrow \argmin_{\theta_{t,i}}(\sum_{j\in S(\theta_{t,i})}\norm{\theta_{t,i} - \theta_{t,j}}^2_p), \\
+    \text{with} \quad S(\theta_{t,i}) &= \argmin_{\substack{S^* \subseteq \{1, \ldots, n\} \setminus \{i\}\\|S^*| = K-m-2}}(\sum_{j\in S^*}\norm{\theta_{t,i} - \theta_{t,j}}^2_p). \nonumber
+\end{align}
+Where $S(\theta_{t,i})$ denotes the set of indices with their updates being the closest $K-m-2$ updates to $\theta_{t,i}$, and $p$ is a hyperparameter determining the $l_p$ norm used as similarity measure. Thus, the aggregation rule selects a single $\theta_{t,i}$ as the new global parameter $\theta_{t+1}$. In more detail, this rule consistently selects the update with the smallest summed difference to its closest $K-m-2$ neighbors. This procedure guarantees convergence to the optimum since the updates of all benign clients are very similar because, by assumption, the data across these clients is i.i.d. and the majority of clients are benign.
+
+However, Mhamdi et al. \cite{Mhamdi2018} demonstrated potential weaknesses of many secure aggregation methods, including \textsc{Krum}. The authors determined an issue in using an $l_p$ norm for determining similarities between updates. In detail, the objective in a typical FL environment is to optimize in a high-dimensional and non-convex region. An attacker can effectively craft a malicious update that is very close to an honest update by leveraging the leeway these $l_p$ norms present in high-dimension. Let $d$ be the number of dimensions of $\theta_{t}$. For example, with $p$ being very small, an attacker can easily use an update that is almost identical to an honest one but differs in one coordinate by $\Omega(\sqrt[p]{d})$. This gets even worse when using very large $p$ values or even the infinity norm, as an attacker can craft an update where each component differs by $\Omega(d)$. Since $d$ is usually of large magnitudes in modern neural networks (typically in the range of one hundred billion parameters, e.g., \cite{Trask2015}), this gives an attacker a very big leeway in crafting attacks. Based on these insights, the authors concluded that convergence is not enough for a secure aggregation rule and proposed a modification of \textsc{Krum}, they coined \textsc{Buylan}. Due to the complexity of how \textsc{Buylan} works, and given the focus of this work on understanding why countermeasures fail in general, we will not investigate \textsc{Buylan} any further in this paper.
+
+\subsection{\textsc{TrimmedMean} and \textsc{Median}}
+Although, \textsc{Krum} and especially \textsc{Buylan} provide very good robustness against attacks. They are costly to compute in terms of computing time, especially \textsc{Buylan}, which can considerably slow down the aggregation step. For this and other reasons, Yin et al. \cite{Yin2018} have developed more straightforward aggregation rules that achieve somewhat similar robustness guarantees. The main difference is that they assume strong convexity of the objective function.
+
+The first, so-called \textsc{TrimmedMean}, method calculates a component-wise mean of the values of the components where the smallest and largest values have been removed. More formally, for a chosen $\beta \in [0, \frac{1}{2})$:
+\begin{align} 
+    \theta_{t+1}[i] \leftarrow \frac{1}{(1-2\beta)K} \sum_{m \in M_i} m,
+\end{align}
+where $\theta_{t}[i]$ denotes the $i$.th component of the update $\theta_{t}$, and $M_i \subseteq \{\theta_{t,1}[i], \ldots , \theta_{t,n}[i]\}$ is the set of all $i$.th components where the $\lfloor \beta \cdot K \rfloor$ biggest and the $\lfloor \beta \cdot K \rfloor$ smallest values have been removed.
+
+The second method, called component-wise \textsc{Median} aggregation, does as the name suggests and works as follows:
+\begin{align}
+    \theta_{t+1}[i] \leftarrow \textsf{median}(\{\theta_{t,1}[i], \ldots , \theta_{t,n}[i]\}),
+\end{align}
+where \textsf{median} returns the median of a set.
+
+Although they are very simple to compute, their guarantees for being robust requires the objective function to be strongly convex, which is a very hard criterion since it is usually not the case in most practical scenarios, especially in FL \cite{Bagdasaryan2018}. Furthermore, in the work of \cite{Chen2019}, the authors found that these methods substantially reduce the accuracy of complex models on non-i.i.d. data.
+
+\subsection*{Summary}
+In summary, all of the mechanisms presented, attempt to identify a majority subset of all received updates by comparing them using a similarity measure and then using this subset as their basis for aggregation. This procedure is common in many defense mechanisms found in the literature. For example, \textsc{Buylan}\cite{Blanchard2017}, \textsc{BRUTE}\cite{Mhamdi2018} and \textsc{GeoMed}\cite{Chen2017, Blanchard2017} all operate similarly.
+
+\section{State-of-the-art Attacks}\label{sec:attacks}
+In this section, we will present two examples of attacks, with the first one trying to deviate the global model as much as possible from its optimum, while the second attack tries to install a backdoor into the global model. Both attacks are capable of overcoming the countermeasures we have just presented. Throughout both attacks, we will use the following assumption: an attacker has control over $m$ compromised clients, and w.l.o.g, we assume that these are the clients numbered from $1, \ldots, m$.
+
+\begin{figure*}
+    \centering
+    \begin{minipage}[b]{0.49\textwidth}
+        \centering
+        \input{Figures/plot.tex}
+        \caption{i.i.d. data}
+        \label{fig:outlier_detection_iid}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.49\textwidth}
+        \centering
+        \input{Figures/plot2.tex}
+        \caption{non-i.i.d. data}
+        \label{fig:outlier_detection_non_iid}
+    \end{minipage}
+    \hfill
+    \caption*{Two hypothetical FL scenarios with the key difference being that in \Cref{fig:outlier_detection_iid} the training data is i.i.d. across all benign clients, while in \Cref{fig:outlier_detection_non_iid} the data is non-i.i.d. The blue curve illustrates the relative error rate when selecting the corresponding parameter value $\theta \in \Theta$. Moreover, the directional updates $\theta_{t,i}$ sent by client $i$ from the prior global model parameters $\theta_t$ are displayed with arrows, where the color red indicates that the update was sent from a compromised client, and green from a benign client.}
+\end{figure*}
+
+\subsection{Local Model Poisoning}
+In \cite{Fang2019}, the authors proposed several attacks for different countermeasures and different levels of knowledge by the adversary. Here, we will shortly introduce their proposed mechanism to attack an FL architecture that uses \textsc{Krum} as its aggregation rule to demonstrate how such attacks work.
+
+The main objective of this attack is to alter the global model parameters in a direction opposite to the one they would change without any attacks, effectively deviating them the most \cite{Fang2019}. Meaning, for example, if in iteration $t$, the $i$.th component should be increased, we aim to find an adversary update that causes the $i$.th component to decrease as much as possible.
+
+Here, we consider the case of an attacker who has knowledge about the aggregation function of the central server being \textsc{Krum} and only has access to its compromised clients. 
+
+The attack begins by estimating the direction of parameter change, denoted as $\tilde{s}$. To accomplish this, the attack utilizes local updates that were sent by the clients prior to being compromised at iteration $t'$. The attack calculates an estimate $\tilde{\theta}_{t+1}$ of the global parameters at iteration $t'+1$ by taking the average of all updates:
+\begin{align*}
+    \tilde{\theta}_{t+1} = \frac{1}{m}\sum_{i=1}^{m}\theta_{t', i} \ .
+\end{align*}
+It subsequently calculates an estimate $\tilde{s}$ of the direction of change for each parameter, using the current parameters $\theta_t$ sent by the server at iteration $t$:
+\begin{align}
+    \tilde{s} = \textsf{sign}(\tilde{\theta}_{t+1} - \theta_t), 
+\end{align}
+where \textsf{sign} is the signum function, that maps component wise positive values to $1$, negative values to $-1$, and $0$ to $0$.
+
+As \textsc{Krum} selects only one update in the end and we only have knowledge about the previous benign updates sent at timestamp $t'$, we can formulate the following optimization problem, where $\theta^*$ is the malicious update that will be sent later to the server:
+\begin{align}
+    &\max_{\lambda > 0} \lambda\\
+    \text{subject to} \quad &\theta^* =  \textsc{Krum}(\theta^*, \theta_{t', 1}, \dots ,\theta_{t', m}) \nonumber\\
+    &\theta^* = \theta_t - \lambda \widetilde{s} \nonumber
+\end{align}
+To solve this optimization problem efficiently, the attack uses an approximation algorithm that performs a binary search on $\lambda$. For each candidate, the algorithm checks whether the current $\lambda$ satisfies the condition. If it does, it updates the parameter as follows $\lambda_{i+1} \leftarrow \frac{3}{4} \lambda_i$, and $\lambda_{i+1} \leftarrow \frac{1}{2} \lambda_i$ for the case it does not. In the paper \cite{Fang2019}, the authors also proved an upper bound used to initialize $\lambda_0$.
+
+After obtaining a (sub-) optimal $\lambda$ value, the attack randomly samples $m-1$ updates whose distance is at most $\epsilon$ to $\theta^*$ by a given $l_p$ norm. Afterward, one randomly chosen compromised client sends out $\theta^*$, while all other compromised clients send one of the samples to the central server.
+Note that $\epsilon$ and $p$ are hyperparameters of the attack.
+
+Additionally, the authors conducted an empirical study about the effectiveness of this attack on several common datasets. Their results are quite dramatic, as they can increase the error rate by relatively \SI{400}{\percent} when using this attack compared to the regular error rate when no attack is present.
+
+\subsection{Backdoor Attack}
+The objective of the attacks is to achieve high accuracy on both the main task of the global model and an attacker-chosen backdoor subtask. A backdoor task is a small task where the global model produces an output specified by the attacker for specific input sequences chosen by the attacker. For instance, in the hospital scenario introduced in \Cref{sec:intro}, an adversary might seek to insert a backdoor that causes the global model to produce a positive test result for a specific disease every time an input indicates that the patient has blue eyes.
+
+In its simplest form, the attack works as follows:
+Each compromised client trains on both its normal data and the backdoor task, such that each client's model learns to be good on its normal task and can differentiate it from the backdoor task and show good performance on it. With this technique, one can already achieve quite a good performance. In an experiment where a backdoor task was installed in a FL architecture designed to learn a word prediction model, this simple algorithm was able to achieve an average accuracy of over \SI{80}{\percent} with the global model on the installed backdoors after $100$ FL iterations. This was possible even when the attacker controlled only \SI{10}{\percent} of all clients \cite{Bagdasaryan2018}.
+
+The authors of \cite{Bagdasaryan2018} even went a bit further and developed a model replacement technique that can outperform the previous approach while also being aware of possible defense and anomaly detectors used by the central server. Furthermore, they showed that attacking \textsc{Krum} is fairly easy. As the training process is converging, an update $\theta_{t, i}$ is more likely to be selected if it is very close to the previous global model $\theta_{t}$. Therefore, an attacker only has to construct model parameters that achieve high accuracy on the backdoor task and is very close to the previous global parameters.
+
+In an empirical study, it was demonstrated that the probability of the central server selecting one of the malicious, close to the previous global model, updates in their test case already with probability greater than $\SI{80}{\percent}$ when the attacker controls only $\SI{0.2}{\percent}$ of all clients \cite{Bagdasaryan2018}.
+
+\subsection*{Summary}
+Despite the presence of countermeasures, both types of attacks have demonstrated their effectiveness. Moreover, as this section has demonstrated, the information about which countermeasure is used is precious as attackers can make their attacks more efficient.
+The primary reason for the overall failure of these measures is due to the non-i.i.d. nature of the data, which we will delve into in greater detail in the following section.
+
+\section{Discussion}\label{sec:discussion}
+In this section, we will start discussing our perspective on FL. In particular, we first consider a connection between FL countermeasures and statistical outlier detection. Then, we go on about how these countermeasures can also risk FL's privacy guarantee and, finally, the effect on the convergence behavior of the countermeasures.
+
+\subsection{Statisical Outlier Detection}
+Upon learning about the susceptibility of one of the simplest FL architectures due to its unbounded aggregation function in \Cref{sec:fundamental_issues_in_fl}, combined with the more sophisticated defense mechanisms we introduce in \Cref{sec:counter_measures} that still failed to protect the global model, as demonstrated with the two attacks presented in \Cref{sec:attacks}, it seems that FL is always vulnerable to adversarial influences. Notably, this vulnerability is not solely attributable to the choice of defense mechanism we made and presented in this paper, as for example the two attacks from the previous section can be modified to more complicated methods like \textsc{Buylan} or \textsc{GeoMed} \cite{Bagdasaryan2018, Fang2019}. %In \cite{Fang2019}, as well as in \cite{Bagdasaryan2018}, the authors showed that even for these more complicated aggregation rules, their attacks are still successful.
+
+This raises the question of what all these countermeasures have in common that make them so susceptible for attacks and whether there exists a foolproof defense mechanism against them. To answer this, it is necessary to consider the larger picture and the limited information available to the central server. The only plausible assumption the server can really make is that the majority of clients are benign, otherwise the adversary would always be successful in manipulating the global model and any defense strategy would be pointless. Therefore, almost countermeasures try to compute a new global parameter that is very close by some measure to the majority of the updates received. 
+
+In other words, all these methods are just a sort of statistical outlier detection, where the task is to find the outliers that deviate the most of the majority and remove them. For better understanding this level of abstraction, see \Cref{fig:outlier_detection_iid} and \Cref{fig:outlier_detection_non_iid}. The figures depict a hypothetical FL scenario where we plotted how the choice of the global parameter $\theta_t \in \Theta$ corresponds to a relative loss of the overall classifier on a fixed test dataset. The goal of the FL architecture is to derive a parameter that produce the least amount of error, meaning the FL architecture is trying to find the minimum of the blue curve. All parameters between the scenarios depicted in \Cref{fig:outlier_detection_iid} and \Cref{fig:outlier_detection_non_iid} are identical, with the key exception that the data in \Cref{fig:outlier_detection_iid} is i.i.d., while in \Cref{fig:outlier_detection_non_iid} it is not.
+
+The central server in these scenarios sees only the current parameter $\theta_t$ and all updates by the clients $\theta_{t,i}$, which are indicated with an arrow for their direction and magnitude of change they propose. Based on this, the server must decide which subset of the arrows belongs to the benign majority, and compute a new global parameter based on this subset without wasting too much information. We colored the arrows red if they were sent by a compromised client and green if they were sent by a benign client, but note that the server obviously does not have this information.
+
+In the scenario of \Cref{fig:outlier_detection_iid}, it is quite easy to see that the majority of arrows are pointing to the right (the optimal direction), and only a handful of arrows are pointing to the left, such that a good countermeasure, would only use the arrow pointing to the right as its basis for the aggregation.
+
+Unfortunately in practice, the central server will not have it that easy, and the reason for that is not that the amount of dimension increases significantly, since many statistical outlier detection algorithm work on arbitrary dimensions. The problem arises due to the non-i.i.d. nature of the training data used by each client. This presents a significant challenge since the updates received from clients can vary widely, depending on how unbalanced the data is across all clients, see \Cref{fig:outlier_detection_non_iid}. In this scenario, the green arrows are more fanned out and dispersed. However, the crucial point is that the resulting arrow would still point in the right direction if only the green arrows would be averaged, meaning the green arrows alone would lead to the convergence to the global minimum. Unfortunately, the central server does not know which arrows belong to compromised clients and which to benign clients. Thus, the server is most likely to select all red arrows and some green arrows as the majority, as these arrows present the subset that is the closest together and point in a similar direction. Hence, the server will update the global parameter to the left and thereby consequently leading to a worse model. Since all countermeasures presented in \Cref{sec:counter_measures} assume that the training data are i.i.d. to guarantee the convergence of the model to the optimum, we can safely assume that none of them will converge in the right direction in this hypothetical scenario either.
+
+As a final point, one might ask why the server does not simply use a validation set to check that each update is benign or that the aggregated update leads to a better-performing model. The problem with this idea is that FL is typically used in use cases where the data remains confidential and cannot be shared with third parties, for example, the healthcare settings in \cite{Jochems2016,Dayan2021}. Second, and most importantly, because of their non-i.i.d. nature, a validation set can never represent the entire training data. Thus, if a validation set were to be used, the resulting global model would be biased toward the validation set and disregard any outlier cases present in a client's training data but not in the validation set.
+
+
+\subsection{Countermeasures as Privacy Concern}
+One of the most appealing aspects of FL concerning sensitive data is the possibility of not having to share them with the central server while still gaining all the benefits of training on a collective dataset. When discussing attacks, we usually assume that the server remains uncompromised while clients may be compromised. Although an attacker can gain access to all the information stored on a compromised client, it is usually not so easy to intercept other updates exchanged between clients and the server because of the use of secure cryptographic protocols, such as TLS, between each client and the server.
+
+However, an attacker can still manipulate countermeasures to expose these client updates. The most intriguing example involves the aggregation rule \textsc{Krum}, which always selects a single update as the new global parameter for the next iteration that is consequently shared with each client. Let $\theta_{t,i}$ from client $i$ be the update that \textsc{Krum} selects in iteration $t$ and client $i$ is not compromised. An attacker can then send the update $\theta_{t,i}$ as the update of all its compromised clients in the next iteration $t+1$. Since the update sent by client $i$ in iteration $t+1$ will be very similar to its update in iteration $t$, the attacker artificially increases the number of updates that are close to $\theta_{t+1,i}$, and thereby increases the likelihood that \textsc{Krum} will select client $i$'s update and share it with all clients again.
+
+This enables an attacker to obtain multiple updates from the same client. Using techniques like those presented in \cite{Zhu2020,Balunovic2022}, the attacker can recreate the sensitive training data of client $i$.
+\subsection{Impact on the Learning Speed}
+Another factor we want to discuss is the resulting deceleration of the learning process when employing countermeasures. The gold standard in this regard is the standard averaging aggregation method when there is no Byzantine client, where each of the updates contributes equally to the resulting global parameter. We gave a formalization of this rule in \Cref{sec:fl} in \Cref{math:aggregation_example}.
+
+For this discussion, we must consider two factors: the time required to compute the aggregation rule and the number of iterations required to converge to an optimum.
+
+First, more complicated aggregation methods like, for example, \textsc{Buylan} are more expensive to compute during the aggregation step than standard averaging. However, the authors of \cite{Mhamdi2018} developed an efficient implementation of \textsc{Buylan} that runs in $\mathcal{O}(n^2d +nd)$, where $n$ represents the number of updates received by the server, and $d$ denotes the dimension of $\theta$. Nonetheless, when recalling that $d$ is typically sufficiently larger than $n$ with $d >> n$, typically in the range of one hundred billion, e.g., \cite{Trask2015}, and adding that standard averaging can be efficiently computed in $\mathcal{O}(nd)$, the difference in computing time is negligible.
+
+Second, and most importantly, since almost all countermeasures are based on statistical outlier detections and remove a subset of updates that they flag as outliers from the calculation of the new global parameters, these countermeasures lose a lot of information when used only on benign updates. However, in the work of \cite{Blanchard2017}, the authors demonstrated that the deceleration of the convergence of the FL architecture when using \textsc{Krum} with and without Byzantine clients can be controlled by increasing the local batch size for the local training process of the clients. With this insight, they further showed experimentally that the difference in the convergence behavior is negligible with a sufficiently large batch size.
+
+From these results, we conclude that the deceleration of the convergence behavior is less significant than assumed. Thus, combined with the fact that standard averaging is very susceptible to simple attacks as shown in \Cref{sec:fundamental_issues_in_fl}, and that a distributed system at large scale needs to be robust against Byzantine failures, we conclude that all countermeasures represented in this paper are superior to standard averaging.
+
+\section{Conclusion}
+Overall, Federated Learning (FL) remains a captivating technology due to its potential for providing privacy and scalability while also allowing for data to be non-i.i.d. This makes this technology easy to deploy, which consequently makes it so appealing. However, as this paper has demonstrated thoughtfully, one must approach FL carefully. We conclude our work by offering two guidelines for those considering using an FL architecture. These guidelines differ depending on whether the data is highly unbalanced or whether the unbalance is kept to a minimum and the data is nearly i.i.d.:
+
+\begin{enumerate}
+    \item In cases where the data is i.i.d. or nearly i.i.d., with the unbalance being contained by some measure, we can be very relaxed about the requirements for joining the FL architecture as a client. As long as the operator of this architecture can guarantee that the majority of clients are benign, the global model will be safe. As shown in \Cref{sec:discussion}, countermeasures can be quite effective in these scenarios. Examples of such scenarios include \cite{NYTimes,Konecny2017}.
+    
+    \item In cases where the data is non-i.i.d. and very unbalanced, it is not advisable to allow arbitrary clients to constantly join and leave the system without proper authorization from a trusted third party. As we have demonstrated in \Cref{sec:discussion}, the ability to detect adversary influences of countermeasure is very limited when the data is non-i.i.d. However, even when clients can be trusted not to intentionally manipulate the global model, they may still be prone to Byzantine failures, leading to updates that are diametrically opposed to the intended direction. In such cases, countermeasures must still be employed to mitigate such risks.
+    
+    As an example of such a scenario where the operator of an FL architecture can trust all its participants, we can recall the healthcare example \cite{Jochems2016,Dayan2021} introduced in \Cref{sec:intro}. Here, the operator must first talk to all participating hospitals. After each of them agrees to participate in the FL architecture, the operator can assume that all of them are benign.  
+\end{enumerate}
+FL architecture operators can gain initial insight from these guidelines, but caution is needed with very unbalanced data. However, the second guideline is more cautious and goes against the vision of FL's inventors. They envisioned FL as a distributed learning technology that could scale perfectly by allowing clients to join and leave at any time, with no constraints on their training data. However, as this work has shown and discussed, we do not believe this vision is liable, as there seems to be no absolute protection against malicious interference in this scenario.
+
+%\section*{Acknowledgments}
+%I would like to thank my supervisor Johannes Lohmöller for his support in the preparation of this paper.
+
+% Modified so that bibliography resides in external file.
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

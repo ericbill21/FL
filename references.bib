@@ -1,0 +1,319 @@
+
+@inproceedings{Bagdasaryan2018,
+  title     = {How To Backdoor Federated Learning},
+  author    = {Bagdasaryan, Eugene and Veit, Andreas and Hua, Yiqing and Estrin, Deborah and Shmatikov, Vitaly},
+  booktitle = {Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics},
+  pages     = {2938--2948},
+  year      = {2020},
+  editor    = {Chiappa, Silvia and Calandra, Roberto},
+  volume    = {108},
+  series    = {Proceedings of Machine Learning Research},
+  month     = {26--28 Aug},
+  publisher = {PMLR},
+  pdf       = {http://proceedings.mlr.press/v108/bagdasaryan20a/bagdasaryan20a.pdf},
+  url       = {https://proceedings.mlr.press/v108/bagdasaryan20a.html},
+  abstract  = {Federated models are created by aggregating model updates submittedby participants.  To protect confidentiality of the training data,the aggregator by design has no visibility into how these updates aregenerated.  We show that this makes federated learning vulnerable to amodel-poisoning attack that is significantly more powerful than poisoningattacks that target only the training data.A single or multiple malicious participants can use modelreplacement to introduce backdoor functionality into the joint model,e.g., modify an image classifier so that it assigns an attacker-chosenlabel to images with certain features, or force a word predictor tocomplete certain sentences with an attacker-chosen word.  We evaluatemodel replacement under different assumptions for the standardfederated-learning tasks and show that it greatly outperformstraining-data poisoning.Federated learning employs secure aggregation to protect confidentialityof participants’ local models and thus cannot detect anomalies inparticipants’ contributions to the joint model.  To demonstrate thatanomaly detection would not have been effective in any case, we alsodevelop and evaluate a generic constrain-and-scale technique thatincorporates the evasion of defenses into the attacker’s loss functionduring training.}
+}
+
+@inproceedings{Balunovic2022,
+title={Bayesian Framework for Gradient Leakage},
+author={Mislav Balunovic and Dimitar Iliev Dimitrov and Robin Staab and Martin Vechev},
+booktitle={International Conference on Learning Representations},
+year={2022},
+url={https://openreview.net/forum?id=f2lrIbGx3x7}
+}
+
+@inproceedings{Blanchard2017,
+  author    = {Blanchard, Peva and El Mhamdi, El Mahdi and Guerraoui, Rachid and Stainer, Julien},
+  booktitle = {Advances in Neural Information Processing Systems},
+  editor    = {I. Guyon and U. Von Luxburg and S. Bengio and H. Wallach and R. Fergus and S. Vishwanathan and R. Garnett},
+  pages     = {},
+  publisher = {Curran Associates, Inc.},
+  title     = {Machine Learning with Adversaries: Byzantine Tolerant Gradient Descent},
+  url       = {https://proceedings.neurips.cc/paper/2017/file/f4b9ec30ad9f68f89b29639786cb62ef-Paper.pdf},
+  volume    = {30},
+  year      = {2017}
+}
+
+
+@misc{Chen2017,
+  title         = {Distributed Statistical Machine Learning in Adversarial Settings: Byzantine Gradient Descent},
+  author        = {Yudong Chen and Lili Su and Jiaming Xu},
+  year          = {2017},
+  eprint        = {1705.05491},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.DC}
+}
+
+@inproceedings{Chen2019,
+ author = {Chen, Xiangyi and Chen, Tiancong and Sun, Haoran and Wu, Steven Z. and Hong, Mingyi},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {H. Larochelle and M. Ranzato and R. Hadsell and M.F. Balcan and H. Lin},
+ pages = {21616--21626},
+ publisher = {Curran Associates, Inc.},
+ title = {Distributed Training with Heterogeneous Data: Bridging Median- and Mean-Based Algorithms},
+ url = {https://proceedings.neurips.cc/paper_files/paper/2020/file/f629ed9325990b10543ab5946c1362fb-Paper.pdf},
+ volume = {33},
+ year = {2020}
+}
+
+@article{Dayan2021,
+  author   = {Dayan, Ittai et al.},
+  title    = {Federated learning for predicting clinical outcomes in patients with COVID-19},
+  journal  = {Nature Medicine},
+  year     = {2021},
+  month    = {Oct},
+  day      = {01},
+  volume   = {27},
+  number   = {10},
+  pages    = {1735-1743},
+  abstract = {Federated learning (FL) is a method used for training artificial intelligence models with data from multiple sources while maintaining data anonymity, thus removing many barriers to data sharing. Here we used data from 20{\thinspace}institutes across the globe to train a FL model, called EXAM (electronic medical record (EMR) chest X-ray AI model), that predicts the future oxygen requirements of symptomatic patients with COVID-19 using inputs of vital signs, laboratory data and chest X-rays. EXAM achieved an average area under the curve (AUC) >0.92 for predicting outcomes at 24 and 72{\thinspace}h from the time of initial presentation to the emergency room, and it provided 16{\%} improvement in average AUC measured across all participating sites and an average increase in generalizability of 38{\%} when compared with models trained at a single site using that site's data. For prediction of mechanical ventilation treatment or death at 24{\thinspace}h at the largest independent test site, EXAM achieved a sensitivity of 0.950 and specificity of 0.882. In this study, FL facilitated rapid data science collaboration without data exchange and generated a model that generalized across heterogeneous, unharmonized datasets for prediction of clinical outcomes in patients with COVID-19, setting the stage for the broader use of FL in healthcare.},
+  issn     = {1546-170X},
+  doi      = {10.1038/s41591-021-01506-3},
+  url      = {https://doi.org/10.1038/s41591-021-01506-3}
+}
+
+@inproceedings {Fang2019,
+author = {Minghong Fang and Xiaoyu Cao and Jinyuan Jia and Neil Gong},
+title = {Local Model Poisoning Attacks to {Byzantine-Robust} Federated Learning},
+booktitle = {29th USENIX Security Symposium (USENIX Security 20)},
+year = {2020},
+isbn = {978-1-939133-17-5},
+pages = {1605--1622},
+url = {https://www.usenix.org/conference/usenixsecurity20/presentation/fang},
+publisher = {USENIX Association},
+month = aug,
+}
+
+@InProceedings{Ioffe2015,
+  title = 	 {Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift},
+  author = 	 {Ioffe, Sergey and Szegedy, Christian},
+  booktitle = 	 {Proceedings of the 32nd International Conference on Machine Learning},
+  pages = 	 {448--456},
+  year = 	 {2015},
+  editor = 	 {Bach, Francis and Blei, David},
+  volume = 	 {37},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Lille, France},
+  month = 	 {07--09 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v37/ioffe15.pdf},
+  url = 	 {https://proceedings.mlr.press/v37/ioffe15.html},
+  abstract = 	 {Training Deep Neural Networks is complicated by the fact that the distribution of each layer’s inputs changes during training, as the parameters of the previous layers change. This slows down the training by requiring lower learning rates and careful parameter initialization, and makes it notoriously hard to train models with saturating nonlinearities. We refer to this phenomenon as internal covariate shift, and address the problem by normalizing layer inputs. Our method draws its strength from making normalization a part of the model architecture and performing the normalization for each training mini-batch. Batch Normalization allows us to use much higher learning rates and be less careful about initialization, and in some cases eliminates the need for Dropout. Applied to a stateof-the-art image classification model, Batch Normalization achieves the same accuracy with 14 times fewer training steps, and beats the original model by a significant margin. Using an ensemble of batch-normalized networks, we improve upon the best published result on ImageNet classification: reaching 4.82% top-5 test error, exceeding the accuracy of human raters.}
+}
+
+
+@article{Jochems2016,
+  title    = {Distributed learning: Developing a predictive model based on data
+              from multiple hospitals without data leaving the hospital - A
+              real life proof of concept},
+  author   = {Jochems, Arthur and Deist, Timo M and van Soest, Johan and Eble,
+              Michael and Bulens, Paul and Coucke, Philippe and Dries, Wim and
+              Lambin, Philippe and Dekker, Andre},
+  abstract = {PURPOSE: One of the major hurdles in enabling personalized
+              medicine is obtaining sufficient patient data to feed into
+              predictive models. Combining data originating from multiple
+              hospitals is difficult because of ethical, legal, political, and
+              administrative barriers associated with data sharing. In order to
+              avoid these issues, a distributed learning approach can be used.
+              Distributed learning is defined as learning from data without the
+              data leaving the hospital. PATIENTS AND METHODS: Clinical data
+              from 287 lung cancer patients, treated with curative intent with
+              chemoradiation (CRT) or radiotherapy (RT) alone were collected
+              from and stored in 5 different medical institutes (123 patients
+              at MAASTRO (Netherlands, Dutch), 24 at Jessa (Belgium, Dutch), 34
+              at Liege (Belgium, Dutch and French), 48 at Aachen (Germany,
+              German) and 58 at Eindhoven (Netherlands, Dutch)). A Bayesian
+              network model is adapted for distributed learning (watch the
+              animation: http://youtu.be/nQpqMIuHyOk). The model predicts
+              dyspnea, which is a common side effect after radiotherapy
+              treatment of lung cancer. RESULTS: We show that it is possible to
+              use the distributed learning approach to train a Bayesian network
+              model on patient data originating from multiple hospitals without
+              these data leaving the individual hospital. The AUC of the model
+              is 0.61 (95\%CI, 0.51-0.70) on a 5-fold cross-validation and
+              ranges from 0.59 to 0.71 on external validation sets. CONCLUSION:
+              Distributed learning can allow the learning of predictive models
+              on data originating from multiple hospitals while avoiding many
+              of the data sharing barriers. Furthermore, the distributed
+              learning approach can be used to extract and employ knowledge
+              from routine patient data from multiple hospitals while being
+              compliant to the various national and European privacy laws.},
+  journal  = {Radiother Oncol},
+  volume   = 121,
+  number   = 3,
+  pages    = {459--467},
+  month    = oct,
+  year     = 2016,
+  address  = {Ireland},
+  keywords = {Bayesian networks; Distributed learning; Dyspnea; Machine
+              learning; Privacy preserving data-mining},
+  language = {en}
+}
+
+@misc{Konecny2017,
+  title         = {Federated Learning: Strategies for Improving Communication Efficiency},
+  author        = {Jakub Konečný and H. Brendan McMahan and Felix X. Yu and Peter Richtárik and Ananda Theertha Suresh and Dave Bacon},
+  year          = {2017},
+  eprint        = {1610.05492},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.LG}
+}
+
+@article{Lamport1982,
+  author     = {Lamport, Leslie and Shostak, Robert and Pease, Marshall},
+  title      = {The Byzantine Generals Problem},
+  year       = {1982},
+  issue_date = {July 1982},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {4},
+  number     = {3},
+  issn       = {0164-0925},
+  url        = {https://doi.org/10.1145/357172.357176},
+  doi        = {10.1145/357172.357176},
+  journal    = {ACM Trans. Program. Lang. Syst.},
+  month      = {jul},
+  pages      = {382–401},
+  numpages   = {20}
+}
+
+@article{Lyu2020,
+  author       = {Lingjuan Lyu and
+                  Han Yu and
+                  Qiang Yang},
+  title        = {Threats to Federated Learning: {A} Survey},
+  journal      = {CoRR},
+  volume       = {abs/2003.02133},
+  year         = {2020},
+  url          = {https://arxiv.org/abs/2003.02133},
+  eprinttype    = {arXiv},
+  eprint       = {2003.02133},
+  timestamp    = {Tue, 19 Jul 2022 08:46:24 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2003-02133.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{McDonald2010,
+  title     = {Distributed Training Strategies for the Structured Perceptron},
+  author    = {McDonald, Ryan  and
+               Hall, Keith  and
+               Mann, Gideon},
+  booktitle = {Human Language Technologies: The 2010 Annual Conference of the North {A}merican Chapter of the Association for Computational Linguistics},
+  month     = jun,
+  year      = {2010},
+  address   = {Los Angeles, California},
+  publisher = {Association for Computational Linguistics},
+  url       = {https://aclanthology.org/N10-1069},
+  pages     = {456--464}
+}
+
+@InProceedings{McMahan2017,
+  title = 	 {{Communication-Efficient Learning of Deep Networks from Decentralized Data}},
+  author = 	 {McMahan, Brendan and Moore, Eider and Ramage, Daniel and Hampson, Seth and Arcas, Blaise Aguera y},
+  booktitle = 	 {Proceedings of the 20th International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {1273--1282},
+  year = 	 {2017},
+  editor = 	 {Singh, Aarti and Zhu, Jerry},
+  volume = 	 {54},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {20--22 Apr},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v54/mcmahan17a/mcmahan17a.pdf},
+  url = 	 {https://proceedings.mlr.press/v54/mcmahan17a.html},
+  abstract = 	 {Modern mobile devices have access to a wealth of data suitable for learning models, which in turn can greatly improve the user experience on the device. For example, language models can improve speech recognition and text entry, and image models can automatically select good photos. However, this rich data is often privacy sensitive, large in quantity, or both, which may preclude logging to the data center and training there using conventional approaches.  We advocate an alternative that leaves the training data distributed on the mobile devices, and learns a shared model by aggregating locally-computed updates. We term this decentralized approach Federated Learning.  We present a practical method for the federated learning of deep networks based on iterative model averaging, and conduct an extensive empirical evaluation, considering five different model architectures and four datasets. These experiments demonstrate the approach is robust to the unbalanced and non-IID data distributions that are a defining characteristic of this setting. Communication costs are the principal constraint, and we show a reduction in required communication rounds by 10-100x as compared to synchronized stochastic gradient descent. }
+}
+
+@InProceedings{Mhamdi2018,
+  title = 	 {The Hidden Vulnerability of Distributed Learning in {B}yzantium},
+  author =       {El Mhamdi, El Mahdi and Guerraoui, Rachid and Rouault, S{\'e}bastien},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {3521--3530},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v80/mhamdi18a/mhamdi18a.pdf},
+  url = 	 {https://proceedings.mlr.press/v80/mhamdi18a.html},
+  abstract = 	 {While machine learning is going through an era of celebrated success, concerns have been raised about the vulnerability of its backbone: stochastic gradient descent (SGD). Recent approaches have been proposed to ensure the robustness of distributed SGD against adversarial (Byzantine) workers sending <em>poisoned</em> gradients during the training phase. Some of these approaches have been proven <em>Byzantine–resilient</em>: they ensure the <em>convergence</em> of SGD despite the presence of a minority of adversarial workers. We show in this paper that <em>convergence is not enough</em>. In high dimension $d \gg 1$, an adver\-sary can build on the loss function’s non–convexity to make SGD converge to <em>ineffective</em> models. More precisely, we bring to light that existing Byzantine–resilient schemes leave a <em>margin of poisoning</em> of $\bigOmega\left(f(d)\right)$, where $f(d)$ increases at least like $\sqrt[p]{d&nbsp;}$. Based on this <em>leeway</em>, we build a simple attack, and experimentally show its strong to utmost effectivity on CIFAR–10 and MNIST. We introduce <em>Bulyan</em>, and prove it significantly reduces the attackers leeway to a narrow $\bigO\,( \sfrac{1}{\sqrt{d&nbsp;}})$ bound. We empirically show that Bulyan does not suffer the fragility of existing aggregation rules and, at a reasonable cost in terms of required batch size, achieves convergence <em>as if</em> only non–Byzantine gradients had been used to update the model.}
+}
+
+
+@misc{NYTimes,
+  author  = {John Markoff},
+  title   = {How Many Computers to Identify a Cat? 16,000},
+  journal = {New York Times},
+  year    = {2012},
+  pages   = {06--25}
+}
+
+@misc{Povey2015,
+  title         = {Parallel training of DNNs with Natural Gradient and Parameter Averaging},
+  author        = {Daniel Povey and Xiaohui Zhang and Sanjeev Khudanpur},
+  year          = {2015},
+  eprint        = {1410.7455},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.NE}
+}
+
+@misc{Trask2015,
+  title         = {Modeling Order in Neural Word Embeddings at Scale},
+  author        = {Andrew Trask and David Gilmore and Matthew Russell},
+  year          = {2015},
+  eprint        = {1506.02338},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.CL}
+}
+
+@InProceedings{Yin2018,
+  title = 	 {{B}yzantine-Robust Distributed Learning: Towards Optimal Statistical Rates},
+  author =       {Yin, Dong and Chen, Yudong and Kannan, Ramchandran and Bartlett, Peter},
+  booktitle = 	 {Proceedings of the 35th International Conference on Machine Learning},
+  pages = 	 {5650--5659},
+  year = 	 {2018},
+  editor = 	 {Dy, Jennifer and Krause, Andreas},
+  volume = 	 {80},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {10--15 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v80/yin18a/yin18a.pdf},
+  url = 	 {https://proceedings.mlr.press/v80/yin18a.html},
+  abstract = 	 {In this paper, we develop distributed optimization algorithms that are provably robust against Byzantine failures—arbitrary and potentially adversarial behavior, in distributed computing systems, with a focus on achieving optimal statistical performance. A main result of this work is a sharp analysis of two robust distributed gradient descent algorithms based on median and trimmed mean operations, respectively. We prove statistical error rates for all of strongly convex, non-strongly convex, and smooth non-convex population loss functions. In particular, these algorithms are shown to achieve order-optimal statistical error rates for strongly convex losses. To achieve better communication efficiency, we further propose a median-based distributed algorithm that is provably robust, and uses only one communication round. For strongly convex quadratic loss, we show that this algorithm achieves the same optimal error rate as the robust distributed gradient descent algorithms.}
+}
+
+
+@misc{Zhang2015,
+  title         = {Deep learning with Elastic Averaging SGD},
+  author        = {Sixin Zhang and Anna Choromanska and Yann LeCun},
+  year          = {2015},
+  eprint        = {1412.6651},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.LG}
+}
+
+@inproceedings{Zhu2020,
+  author       = {Junyi Zhu and
+                  Matthew B. Blaschko},
+  title        = {{R-GAP:} Recursive Gradient Attack on Privacy},
+  booktitle    = {9th International Conference on Learning Representations, {ICLR} 2021,
+                  Virtual Event, Austria, May 3-7, 2021},
+  publisher    = {OpenReview.net},
+  year         = {2021},
+  url          = {https://openreview.net/forum?id=RSU17UoKfJF},
+  timestamp    = {Wed, 07 Dec 2022 23:13:29 +0100},
+  biburl       = {https://dblp.org/rec/conf/iclr/ZhuB21.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@misc{Devlin2019,
+      title={BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding}, 
+      author={Jacob Devlin and Ming-Wei Chang and Kenton Lee and Kristina Toutanova},
+      year={2019},
+      eprint={1810.04805},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+
+
